@@ -77,7 +77,7 @@ def get_horse_result(row):
             odds=float(cells[7]) if cells[7] else 0.0,
     )
 
-def get_race_data(date):
+def get_race_data(date:str):
     matches = get_matches(date)
     return Race(date=date,matches=matches)
 
@@ -92,6 +92,9 @@ def get_all_races_since(date):
     #get to the first thursday
     while(date.weekday() != 3):
         date += datetime.timedelta(days=1)
+    races = []
     while(date < datetime.datetime.now()):
-        print(date)
+        date_str = f"{date.day}/{date.month}/{date.year}"
+        races.append(get_race_data(date_str))
         date += datetime.timedelta(days=7)
+    return races
