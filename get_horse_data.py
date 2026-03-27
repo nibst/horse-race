@@ -10,7 +10,8 @@ from typing import List
 HORSE_RESULTS_URL = "https://www.jockeyrs.com.br/resultados/"
 HORSE_MATCH_ENDPOINT = "https://www.jockeyrs.com.br/resultados/consultaCompetidor.php?pareo="
 HORSE_RACE_DAY_ENDPOINT = "https://www.jockeyrs.com.br/resultados/consultaReuniao.php?dia=" #dd/mm/yyyy
-
+HORSE_INFO_ENDPOINT = "https://www.jockeyrs.com.br/resultados/consultaPerformance.php?nome="
+horse_info_cache = {}
 #for now these two do the same thing, but may change based on jockey website changes
 def parse_header(text):
     """just grab the number in the text"""
@@ -21,6 +22,10 @@ def parse_placement(text):
     match = re.search(r"\d+", text)
     return int(match.group()) if match else 0
 
+def parse_age(text):
+    """just grab the number in the text"""
+    match = re.search(r"\d+", text)
+    return int(match.group()) if match else 0
 def get_matches(date) -> List[Match] :
     """Get all matches data from a certain date
     Parameters
@@ -66,6 +71,7 @@ def get_match_data(match_id):
 
 def get_horse_result(row):
     cells = [td.get_text(strip=True) for td in row.find_all("td")]
+    info = get_horse_info(cells[1])
     return HorseResult(
             placement=parse_placement(cells[0]),
             name=cells[1],
@@ -75,7 +81,25 @@ def get_horse_result(row):
             breeder=cells[5],
             weight=float(cells[6]) if cells[6] else 0.0,
             odds=float(cells[7]) if cells[7] else 0.0,
+            sex=info["Sexo"],
+            age=info["Idade"]
     )
+def get_horse_info(horse_name:str):
+    #dont fetch info of a horse that was already fetched 
+    if horse_info_cache.get(horse_name,None):
+        return horse_info_cache[horse_name]
+    horse_info_html = requests.get(f"{HORSE_INFO_ENDPOINT}{horse_name}").content
+    soup = BeautifulSoup(horse_info_html,'html.parser')
+    #currently it is the first h4 so lets do like this i guess
+    info_text = soup.find('h4').get_text() 
+    parts = [p.strip() for p in info_text.split('|')]
+    info = {}
+    for part in parts:
+        if ':' in part:
+            key, value = part.split(':', 1)
+            info[key.strip()] = parse_age(value.strip())
+    horse_info_cache[horse_name] = info
+    return info
 
 def get_race_data(date:str):
     matches = get_matches(date)
