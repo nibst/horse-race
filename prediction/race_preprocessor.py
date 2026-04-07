@@ -35,7 +35,7 @@ class RacePreprocessor:
         return self._process_pipeline(df, fit=True)
 
     def transform(self, df):
-        if len(self.label_encoders):
+        if len(self.label_encoders) == 0:
             print("Label encoders not fitted")
             return None
         # Apply existing encoders
