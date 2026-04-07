@@ -10,9 +10,9 @@ def main():
     
     races = get_all_races_since(date)
     safe_date = date.replace("/","-")
-    with open(f"./races_since_{safe_date}", "wb") as f:
+    with open(f"./data/races_since_{safe_date}", "wb") as f:
         pickle.dump(races,f)
-    with open(f"races_since_{safe_date}", "rb") as f:
+    with open(f"./data/races_since_{safe_date}", "rb") as f:
         races = pickle.load(f)
     for race in races:
         print("Data: " + race.date)

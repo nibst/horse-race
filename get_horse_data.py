@@ -5,9 +5,9 @@ import datetime
 import requests
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from horse_result import HorseResult
-from race import Race
-from match import Match
+from domain.horse_result import HorseResult
+from domain.race import Race
+from domain.match import Match
 from typing import List
 
 HORSE_RESULTS_URL = "https://www.jockeyrs.com.br/resultados/"
@@ -50,7 +50,7 @@ def get_matches(date) -> List[Match]:
         return []
 
     with ThreadPoolExecutor(max_workers=8) as executor:
-        futures = {executor.submit(get_match_data, mid): mid for mid in ids}
+        futures = {executor.submit(get_match_data, match_id): match_id for match_id in ids}
         results = []
         for future in as_completed(futures):
             result = future.result()
