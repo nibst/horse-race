@@ -1,15 +1,20 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-
+from typing import List
+from domain.race import Race 
+from sklearn.impute import SimpleImputer
 class RacePreprocessor:
     def __init__(self):
         self.label_encoders = {}
         self.categorical_cols = ['sex', 'trainer', 'jockey', 'owner', 'horse_name']
-
-    def flatten(self, data):
+        self.imputer = SimpleImputer(strategy='median')
+    def flatten_to_df(self, races: List[Race]):
+        """
+        flatten the races into a pandas dataframe 
+        """
         raw_data = []
-        for race in (data if isinstance(data, list) else [data]):
+        for race in (races if isinstance(races, list) else [races]):
             race_date = pd.to_datetime(race.date, dayfirst=True)
             for match in race.matches:
                 for horse in match.results:
